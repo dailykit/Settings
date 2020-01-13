@@ -7,8 +7,8 @@ class UserAPI extends RESTDataSource {
     }
 
     willSendRequest(request) {
-        console.log("token in userjs: " + this.context.token);
-        request.headers.set("Authorization", "Bearer " + this.context.token);
+        request.headers.set("Authorization", "Bearer " + this.context.token);
+        request.headers.set("Content-Type", "application/json");
     }
 
     // Resolver method #1. Get all users
@@ -16,9 +16,7 @@ class UserAPI extends RESTDataSource {
         const response = await this.get(
             "admin/realms/" + this.context.realmname + "/users"
         );
-        return Array.isArray(response)
-            ? response.map(user => this.userReducer(user))
-            : [];
+        return response;
     }
 
     // Resolver method #2. Get specific user details
@@ -26,7 +24,7 @@ class UserAPI extends RESTDataSource {
         const response = await this.get(
             "admin/realms/" + this.context.realmname + "/users/" + userId
         );
-        return this.userReducer(response);
+        return response;
     }
 
     // Resolver method #3.Get only specific user roles
@@ -47,7 +45,7 @@ class UserAPI extends RESTDataSource {
             }
         });
 
-        return rolesObject.map(userRoles => this.rolesReducer(userRoles));
+        return rolesObject;
     }
 
     // Resolver method #4. Get all clients
@@ -55,7 +53,7 @@ class UserAPI extends RESTDataSource {
         const response = await this.get(
             "admin/realms/" + this.context.realmname + "/clients"
         );
-        return response.map(client => this.clientReducer(client));
+        return response;
     }
 
     // Resolver method #5. Get specific client details by clientId
@@ -66,7 +64,7 @@ class UserAPI extends RESTDataSource {
                 "/clients?clientId=" +
                 clientId
         );
-        return this.clientReducer(response[0]);
+        return response[0];
     }
 
     // Resolver method #6. Get all roles of a specific client by its Id
@@ -78,62 +76,20 @@ class UserAPI extends RESTDataSource {
                 id +
                 "/roles"
         );
-        return response.map(clientRoles => this.clientRoleReducer(clientRoles));
+        return response;
     }
 
-    // Helper functions
-    // Reducer functions for user(s)
-    userReducer(user) {
-        return {
-            id: user.id,
-            username: user.username,
-            enabled: user.enabled,
-            firstname: user.firstName,
-            lastname: user.lastName,
-            email: user.email
-            // userRoles will be resolved by its own resolver using nesting concept
-        };
-    }
-
-    // Reducer function for client(s)
-    clientReducer(client) {
-        return {
-            id: client.id,
-            clientId: client.clientId,
-            name: client.name
-        };
-    }
-
-    // Reducer function for userRoles
-    rolesReducer(roles) {
-        return {
-            client: roles.client,
-            roles: roles.roles,
-            clientId: "someid"
-        };
-    }
-
-    // Reducer for client roles
-    clientRoleReducer(clientRole) {
-        return {
-            id: clientRole.id,
-            name: clientRole.name,
-            description: clientRole.description
-        };
-    }
-
+    // Helper functions
     // Helper function to build nested userRole object
     buildRoleObject(currentObject) {
         let x = new Object();
         x.client = new Object({ clientId: currentObject.client });
-
-        x.roles = currentObject.mappings.map(clientRoles =>
-            this.clientRoleReducer(clientRoles)
-        );
+        x.roles = currentObject.mappings;
         return x;
     }
 
-    // Method to create new user using mutation
+    // Mutations
+    // Mutation Method #1. Create new user
     async createNewUser({ userInput }) {
         var userToCreate = {
             firstName: userInput.firstname,
@@ -141,25 +97,37 @@ class UserAPI extends RESTDataSource {
             email: userInput.email,
             enabled: true,
             username: userInput.email,
-            notBefore: 0
+            notBefore: 0,
+            credentials: [
+                {
+                    type: "password",
+                    value: "Welcome1"
+                }
+            ],
+            requiredActions: ["UPDATE_PASSWORD", "VERIFY_EMAIL"],
+            attributes: {
+                mobile: [userInput.mobile],
+                profileImage: [userInput.profileImage]
+            }
         };
 
         const response = await this.post(
             "admin/realms/" + this.context.realmname + "/users",
-            userToCreate
+            JSON.stringify(userToCreate)
         );
 
         return "success";
     }
 
-    // Method to add client role to a user
-    async addNewUserRole({ userRoleInput }) {
-        var userRoleToAdd = [
-            {
-                id: userRoleInput.roleId,
-                name: userRoleInput.roleName
-            }
-        ];
+    // Mutation Method #2. Add client role to a user
+    async addNewUserRoles({ userRoleInput }) {
+        var userRolesToAdd = [];
+        for (let index = 0; index < userRoleInput.roleName.length; index++) {
+            var x = {};
+            x.id = userRoleInput.roleId[index];
+            x.name = userRoleInput.roleName[index];
+            userRolesToAdd.push(x);
+        }
 
         const response = await this.post(
             "admin/realms/" +
@@ -168,9 +136,36 @@ class UserAPI extends RESTDataSource {
                 userRoleInput.userId +
                 "/role-mappings/clients/" +
                 userRoleInput.clientId,
-            userRoleToAdd
+            JSON.stringify(userRolesToAdd)
         );
 
+        return "success";
+    }
+
+    // Mutation Method #3. Create new client role
+    async createNewClientRole({ clientRoleInput }) {
+        var roleToCreate = {
+            name: clientRoleInput.name,
+            description: clientRoleInput.description
+        };
+
+        const response = await this.post(
+            "admin/realms/" +
+                this.context.realmname +
+                "/clients/" +
+                clientRoleInput.clientId +
+                "/roles",
+            JSON.stringify(roleToCreate)
+        );
+        return "success";
+    }
+
+    // Mutation Method #4. Suspend User
+    async suspendUser({ userId }) {
+        const response = await this.put(
+            "admin/realms/" + this.context.realmname + "/users/" + userId,
+            JSON.stringify({ enabled: false })
+        );
         return "success";
     }
 }

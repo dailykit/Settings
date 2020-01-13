@@ -14,15 +14,21 @@ const typeDefs = gql`
         id: ID!
         username: String!
         enabled: Boolean!
-        firstname: String!
-        lastname: String!
+        firstName: String!
+        lastName: String!
         email: String!
         userRoles: [UserRole]
+        attributes: UserAttributes
     }
 
     type UserRole {
         client: Client
         roles: [ClientRole]
+    }
+
+    type UserAttributes {
+        mobile: [String]
+        profileImage: [String]
     }
 
     type Client {
@@ -41,19 +47,29 @@ const typeDefs = gql`
     type Mutation {
         createNewUser(input: UserInput): String!
         addNewUserRole(input: UserRoleInput): String!
+        createNewClientRole(input: ClientRoleInput): String!
+        suspendUser(userId: String): String!
     }
 
     input UserInput {
-        firstname: String!
-        lastname: String!
+        firstName: String!
+        lastName: String!
         email: String!
+        mobile: String
+        profileImage: String
     }
 
     input UserRoleInput {
         userId: String!
         clientId: String!
-        roleId: String!
-        roleName: String!
+        roleId: [String]!
+        roleName: [String]!
+    }
+
+    input ClientRoleInput {
+        clientId: String!
+        name: String!
+        description: String!
     }
 `;
 

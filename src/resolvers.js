@@ -31,6 +31,8 @@ module.exports = {
         createNewClientRole: (_, { input }, { dataSources }) =>
             dataSources.userAPI.createNewClientRole({ clientRoleInput: input }),
         suspendUser: (_, { userId }, { dataSources }) =>
-            dataSources.userAPI.suspendUser({ userId: userId })
+            dataSources.userAPI.suspendUser({ userId: userId }),
+        createNewClient: (_, { input }, { dataSources }) =>
+            dataSources.userAPI.createNewClient({ clientInput: input })
     }
 };

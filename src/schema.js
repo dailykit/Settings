@@ -36,6 +36,9 @@ const typeDefs = gql`
         clientId: String!
         name: String
         enabled: Boolean!
+        baseUrl: String
+        adminUrl: String
+        rootUrl: String
     }
 
     type ClientRole {
@@ -49,6 +52,7 @@ const typeDefs = gql`
         addNewUserRole(input: UserRoleInput): String!
         createNewClientRole(input: ClientRoleInput): String!
         suspendUser(userId: String): String!
+        createNewClient(input: ClientInput): String!
     }
 
     input UserInput {
@@ -70,6 +74,22 @@ const typeDefs = gql`
         clientId: String!
         name: String!
         description: String!
+    }
+
+    input ClientInput {
+        clientId: String!
+        name: String!
+        description: String
+        rootUrl: String
+        baseUrl: String
+        adminUrl: String
+        redirectUris: [String]
+        webOrigins: [String]
+        bearerOnly: Boolean
+        standardFlowEnabled: Boolean
+        directAccessGrantsEnabled: Boolean
+        serviceAccountsEnabled: Boolean
+        publicClient: Boolean
     }
 `;
 

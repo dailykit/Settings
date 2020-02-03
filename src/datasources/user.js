@@ -1,9 +1,9 @@
 const { RESTDataSource } = require("apollo-datasource-rest");
 
 class UserAPI extends RESTDataSource {
-    constructor() {
+    constructor(baseUrl) {
         super();
-        this.baseURL = "http://localhost:8281/auth/";
+        this.baseURL = baseUrl;
     }
 
     willSendRequest(request) {
@@ -166,6 +166,31 @@ class UserAPI extends RESTDataSource {
             "admin/realms/" + this.context.realmname + "/users/" + userId,
             JSON.stringify({ enabled: false })
         );
+        return "success";
+    }
+
+    // Mutation Method #5. Create new client/app
+    async createNewClient({ clientInput }) {
+        var clientToCreate = {
+            clientId: clientInput.clientId,
+            name: clientInput.name,
+            description: clientInput.description,
+            protocol: "openid-connect",
+            rootUrl: clientInput.rootUrl,
+            baseUrl: clientInput.baseUrl,
+            redirectUris: clientInput.redirectUris,
+            webOrigins: clientInput.webOrigins,
+            bearerOnly: clientInput.bearerOnly,
+            publicClient: clientInput.publicClient,
+            standardFlowEnabled: clientInput.standardFlowEnabled,
+            directAccessGrantsEnabled: clientInput.directAccessGrantsEnabled
+        };
+
+        const response = await this.post(
+            "admin/realms/" + this.context.realmname + "/clients",
+            JSON.stringify(clientToCreate)
+        );
+
         return "success";
     }
 }

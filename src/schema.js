@@ -45,6 +45,12 @@ const typeDefs = gql`
         id: String!
         name: String!
         description: String
+        permissions: [ClientRoleAttribute]
+    }
+
+    type ClientRoleAttribute {
+        name: String!
+        value: String
     }
 
     type Mutation {
@@ -53,6 +59,7 @@ const typeDefs = gql`
         createNewClientRole(input: ClientRoleInput): String!
         suspendUser(userId: String): String!
         createNewClient(input: ClientInput): String!
+        addNewClientRoleAttribute(input: clientRoleAttributeInput): String!
     }
 
     input UserInput {
@@ -90,6 +97,14 @@ const typeDefs = gql`
         directAccessGrantsEnabled: Boolean
         serviceAccountsEnabled: Boolean
         publicClient: Boolean
+    }
+
+    input clientRoleAttributeInput {
+        clientId: ID!
+        roleName: String!
+        roleDescription: String
+        attributeNames: [String]!
+        attributeValues: [String]!
     }
 `;
 

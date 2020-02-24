@@ -7,7 +7,7 @@ module.exports = {
             dataSources.userAPI.getUserRoles({ userId: id }),
         clients: (_, __, { dataSources }) => dataSources.userAPI.getClients(),
         client: (_, { id }, { dataSources }) =>
-            dataSources.userAPI.getClientDetails({ clientId: id }),
+            dataSources.userAPI.getClientDetails(id),
         clientRoles: (_, { id }, { dataSources }) =>
             dataSources.userAPI.getClientRoles({ id: id })
     },
@@ -18,8 +18,14 @@ module.exports = {
     },
     UserRole: {
         client(parent, args, { dataSources }, info) {
-            return dataSources.userAPI.getClientDetails({
-                clientId: parent.client.clientId
+            return dataSources.userAPI.getClientDetails(parent.client.clientId);
+        }
+    },
+    ClientRole: {
+        permissions(parent, { id }, { dataSources }, info) {
+            return dataSources.userAPI.getClientRoleAttributes({
+                clientId: parent.clientId,
+                roleName: parent.name
             });
         }
     },
@@ -33,6 +39,10 @@ module.exports = {
         suspendUser: (_, { userId }, { dataSources }) =>
             dataSources.userAPI.suspendUser({ userId: userId }),
         createNewClient: (_, { input }, { dataSources }) =>
-            dataSources.userAPI.createNewClient({ clientInput: input })
+            dataSources.userAPI.createNewClient({ clientInput: input }),
+        addNewClientRoleAttribute: (_, { input }, { dataSources }) =>
+            dataSources.userAPI.addNewClientRoleAttribute({
+                clientRoleAttributeInput: input
+            })
     }
 };

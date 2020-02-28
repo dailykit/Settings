@@ -40,8 +40,8 @@ module.exports = {
             dataSources.userAPI.suspendUser({ userId: userId }),
         createNewClient: (_, { input }, { dataSources }) =>
             dataSources.userAPI.createNewClient({ clientInput: input }),
-        addNewClientRoleAttribute: (_, { input }, { dataSources }) =>
-            dataSources.userAPI.addNewClientRoleAttribute({
+        createNewClientRoleAttribute: (_, { input }, { dataSources }) =>
+            dataSources.userAPI.createNewClientRoleAttribute({
                 clientRoleAttributeInput: input
             })
     }

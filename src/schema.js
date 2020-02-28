@@ -59,7 +59,7 @@ const typeDefs = gql`
         createNewClientRole(input: ClientRoleInput): String!
         suspendUser(userId: String): String!
         createNewClient(input: ClientInput): String!
-        addNewClientRoleAttribute(input: clientRoleAttributeInput): String!
+        createNewClientRoleAttribute(input: clientRoleAttributeInput): String!
     }
 
     input UserInput {

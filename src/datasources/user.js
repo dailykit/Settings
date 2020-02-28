@@ -4,6 +4,13 @@ class UserAPI extends RESTDataSource {
     constructor(baseUrl) {
         super();
         this.baseURL = baseUrl;
+        this.clientsToAvoid = [
+            "account",
+            "realm-management",
+            "security-admin-console",
+            "admin-cli",
+            "broker"
+        ];
     }
 
     // Set request headers like Authorization, content-type
@@ -41,7 +48,7 @@ class UserAPI extends RESTDataSource {
         let rolesObject = [];
         clientMappings.forEach(element => {
             let currentObject = response.clientMappings[element];
-            if (element != "account") {
+            if (!this.clientsToAvoid.includes(element)) {
                 rolesObject.push(this.buildRoleObject(currentObject));
             }
         });
@@ -54,7 +61,13 @@ class UserAPI extends RESTDataSource {
         const response = await this.get(
             "admin/realms/" + this.context.realmname + "/clients"
         );
-        return response;
+        let filteredResponse = response;
+        this.clientsToAvoid.forEach(element => {
+            filteredResponse = filteredResponse.filter(
+                item => item.clientId !== element
+            );
+        });
+        return filteredResponse;
     }
 
     // Resolver method #5. Get specific client details by clientId
@@ -108,7 +121,9 @@ class UserAPI extends RESTDataSource {
     buildRoleObject(currentObject) {
         let x = new Object();
         x.client = new Object({ clientId: currentObject.client });
-        x.roles = currentObject.mappings;
+        x.roles = currentObject.mappings.map(clientRole =>
+            this.clientRoleReducer(clientRole, currentObject.id)
+        );
         return x;
     }
 
@@ -126,8 +141,8 @@ class UserAPI extends RESTDataSource {
     // Mutation Method #1. Create new user
     async createNewUser({ userInput }) {
         var userToCreate = {
-            firstName: userInput.firstname,
-            lastName: userInput.lastname,
+            firstName: userInput.firstName,
+            lastName: userInput.lastName,
             email: userInput.email,
             enabled: true,
             username: userInput.email,
@@ -264,7 +279,7 @@ class UserAPI extends RESTDataSource {
     }
 
     // Mutation Method #6. Create new client role attribute
-    async addNewClientRoleAttribute({ clientRoleAttributeInput }) {
+    async createNewClientRoleAttribute({ clientRoleAttributeInput }) {
         var attrs = {};
         for (
             let index = 0;

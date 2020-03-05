@@ -4,7 +4,6 @@ const resolvers = require("./resolvers");
 require("dotenv").config();
 
 const UserAPI = require("./datasources/user");
-const access_token = process.env.ACCESS_TOKEN;
 const realmname = process.env.REALM_NAME;
 const keycloakUrl = process.env.KEYCLOAK_SERVER;
 
@@ -14,9 +13,10 @@ const server = new ApolloServer({
     dataSources: () => ({
         userAPI: new UserAPI(keycloakUrl)
     }),
-    context: () => {
+    context: ({ req }) => {
+        const token = req.headers.authorization;
         return {
-            token: access_token,
+            token: token,
             realmname: realmname
         };
     }

@@ -15,7 +15,7 @@ class UserAPI extends RESTDataSource {
 
     // Set request headers like Authorization, content-type
     willSendRequest(request) {
-        request.headers.set("Authorization", "Bearer " + this.context.token);
+        request.headers.set("Authorization", this.context.token);
         request.headers.set("Content-Type", "application/json");
     }
 
